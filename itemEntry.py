@@ -198,7 +198,7 @@ class ItemEntry:
         self.curStatus : int = None
         self.itemID : int = setID
 
-        self.content_tag : str = "t" + str(self.team) + "p" + self.priority.name + "ty" + self.itemType.name + "s"
+        self.content_tag : str = f"t{self.team}p{self.priority.name}ty{self.itemType.name}s"
 
         self.dataDict : dict = {}
 
