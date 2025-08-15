@@ -1,17 +1,28 @@
 import csv
 import os
 
-def create_csv(name : str, data : list[dict]):
+def create_csv(name : str, data : list[dict], dirPth = ""):
     #Early exit for no data
     if len(data) < 1:
         return
+    
+    #If path does not exist, make it
+    #If file 
+
+
+    #Verify filepath exists
+    if dirPth != "":
+        if not os.path.exists(dirPth):
+            os.makedirs(dirPth)
     
     #Verify legal name
     counter = 1
     extension = ".csv"
     finalName = name + extension
-    while os.path.exists(finalName):
+    finalFilePath = os.path.join(dirPth, finalName)
+    while os.path.exists(finalFilePath):
         finalName = name + "(" + str(counter) + ")" + extension
+        finalFilePath = os.path.join(dirPth, finalName)
         counter += 1
 
     #Build field names out of given data
@@ -20,7 +31,7 @@ def create_csv(name : str, data : list[dict]):
         field_names.append(str(key))
 
     #Create and populate CSV file
-    with open(finalName, "x", newline = '') as new_csv:
+    with open(finalFilePath, "x", newline = '') as new_csv:
         writer = csv.DictWriter(new_csv, field_names)
         writer.writeheader()
         writer.writerows(data)
