@@ -33,5 +33,5 @@ class Retriever():
         newItems = myItemBuilder.buildXRandomItems(x)
         self.activeItemSet = ItemSet(newItems)
     
-    def producePowerBICSVData(self) -> list[dict]:
-        return self.activeItemSet.createPowerBIData(range(1,self.numMonths+1))
+    def producePowerBICSVData(self, processCallback) -> list[dict]:
+        return self.activeItemSet.createPowerBIData(range(1,self.numMonths+1), processCallback)

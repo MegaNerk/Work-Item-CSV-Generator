@@ -35,10 +35,13 @@ class ItemSet():
 
     #region PowerBI Systems
     #Formats set data as counts of identical item entries for each month in the given range
-    def createPowerBIData(self, monthRange : range) -> list[dict]:
+    def createPowerBIData(self, monthRange : range, processCallback) -> list[dict]:
         workingData : dict = {}
         data : list[dict] = []
         monthSet = set(monthRange)
+        counted = 0
+        total = len(self.workItems)
+
         for item in self.workItems:
             for month in item.statuses:
                 if month in monthSet:
@@ -49,6 +52,8 @@ class ItemSet():
                         workingData[curTag]["Count"] = 1
                     else:
                         workingData[curTag]["Count"] += 1
+            counted += 1
+            processCallback.send((counted,total))
         data = list(workingData.values())
         data.sort(key= lambda x: self.parseDateStr(x["Month"]))
         return data

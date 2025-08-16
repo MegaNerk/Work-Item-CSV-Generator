@@ -1,4 +1,8 @@
 from retriever import Retriever
+
+from multiprocessing import Process
+from multiprocessing import Pipe
+
 from appJar import gui
 import csv_writer
 import time
@@ -19,22 +23,60 @@ def main_run(button = None):
         if csvDir is None:
             csvDir = ""
 
-        #Run primary logic
-        start_time = time.perf_counter()
-        retriever = Retriever()
-        retriever.generateDataSet(numItemsToGen)
-        end_time = time.perf_counter()
-        print(f"Generated {numItemsToGen} work items in {end_time - start_time} seconds")
+        con1, con2 = Pipe()
+        countProcess = Process(target=beginCount, args=(con2,numItemsToGen,csvDir))
+        countProcess.start()
+        createBarWindow(con1)
 
-        start_time = time.perf_counter()
-        dataset = retriever.producePowerBICSVData()
-        end_time = time.perf_counter()
-        print(f"Built PowerBI Data for {numItemsToGen} work items in {end_time - start_time} seconds")
+#region Count Process
+def beginCount(connection, numItemsToGen, csvDir):
+    #Run primary logic
+    start_time = time.perf_counter()
+    retriever = Retriever()
+    retriever.generateDataSet(numItemsToGen)
+    end_time = time.perf_counter()
+    print(f"Generated {numItemsToGen} work items in {end_time - start_time} seconds")
 
-        start_time = time.perf_counter()
-        csv_writer.create_csv("PowerBI CSV", dataset, csvDir)
-        end_time = time.perf_counter()
-        print(f"Populated CSV in {end_time - start_time} seconds")
+    start_time = time.perf_counter()
+    dataset = retriever.producePowerBICSVData(connection)
+    end_time = time.perf_counter()
+    print(f"Built PowerBI Data for {numItemsToGen} work items in {end_time - start_time} seconds")
+
+    start_time = time.perf_counter()
+    csv_writer.create_csv("PowerBI CSV", dataset, csvDir)
+    end_time = time.perf_counter()
+    print(f"Populated CSV in {end_time - start_time} seconds")
+#endregion
+
+#region Main Process
+def recordCount(connection):
+    while True:
+        if connection.poll():
+            counted, total = connection.recv()
+            print(str(counted))
+            if counted == total:
+                break
+    print("We seem to have finished counting!")
+
+def createBarWindow(connection):
+    barWindow = gui("Progress", "600x50")
+    barWindow.addMeter("Counted Items")
+    barWindow.setMeterFill("Counted Items", "blue")
+    barWindow.setMeter("Counted Items", 0, "Count progress...")
+    barWindow.after(1, lambda: updateBar(barWindow,connection))
+    barWindow.go()
+
+def updateBar(window,connection):
+    pollingRate = 1 #Polling rate in ms
+    counted, total = None, None
+    while connection.poll():
+        counted, total = connection.recv()
+    if counted != None:
+        window.setMeter("Counted Items", (counted/total)*100, f"{counted}/{total}")
+    if counted == None or counted < total:
+        window.after(pollingRate, lambda: updateBar(window,connection))
+    
+#endregion
 
 if __name__ == "__main__":
     main_window = gui("Work Item Filter", "600x150")
