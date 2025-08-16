@@ -6,10 +6,10 @@ class ItemBuilder():
         self.numberOfMonths : int = setMonths
 
     #Generates x random item entries
-    def buildXRandomItems(self, x : int) -> list[ItemEntry]:
+    def buildXRandomItems(self, x : int, processCallback=None) -> list[ItemEntry]:
         outputItemList = []
-        i = 1
-        while i < x+1:
+        i = 0
+        while i < x:
             #Randomly generate item entry status history
             randStatusDict = {}
             startMonth =  random.randint(1, self.numberOfMonths)
@@ -30,6 +30,8 @@ class ItemBuilder():
 
             outputItemList.append(nextItem)
             i += 1
+            if processCallback != None:
+                processCallback.value += 1
         # for item in outputItemList:
         #     print("Produced Item: " + str(item))
         return outputItemList

@@ -28,9 +28,9 @@ class Retriever():
                 print("Filtered Result For Month " + str(curMonth) + ": " + str(item))
     
     #Generates a new random dataset and replaces the old
-    def generateDataSet(self, x : int = 1):
+    def generateDataSet(self, x : int = 1, processCallback = None):
         myItemBuilder = ItemBuilder(self.numMonths)
-        newItems = myItemBuilder.buildXRandomItems(x)
+        newItems = myItemBuilder.buildXRandomItems(x, processCallback)
         self.activeItemSet = ItemSet(newItems)
     
     def producePowerBICSVData(self, processCallback) -> list[dict]:

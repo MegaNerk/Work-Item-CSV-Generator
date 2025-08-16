@@ -39,7 +39,6 @@ class ItemSet():
         workingData : dict = {}
         data : list[dict] = []
         monthSet = set(monthRange)
-        counted = 0
         total = len(self.workItems)
 
         for item in self.workItems:
@@ -52,8 +51,7 @@ class ItemSet():
                         workingData[curTag]["Count"] = 1
                     else:
                         workingData[curTag]["Count"] += 1
-            counted += 1
-            processCallback.send((counted,total))
+            processCallback.value += 1
         data = list(workingData.values())
         data.sort(key= lambda x: self.parseDateStr(x["Month"]))
         return data
