@@ -9,6 +9,9 @@ import csv_writer
 import time
 import os
 
+global taskCompleted
+taskCompleted : bool = False
+
 def main_run(button = None):
     main_window.stop()
     if button == "Confirm":
@@ -26,12 +29,14 @@ def main_run(button = None):
 
         built = Value('i', 0, lock=False)
         counted = Value('i', 0, lock=False)
-        countProcess = Process(target=beginCount, args=(built,counted,numItemsToGen,csvDir))
+        csvCount = Value('i', 0, lock=False)
+        csvTotal = Value('i', 0, lock=False)
+        countProcess = Process(target=beginCount, args=(built,counted,csvCount,csvTotal,numItemsToGen,csvDir))
         countProcess.start()
-        createBarWindow(built, counted, numItemsToGen)
+        createBarWindow(built, counted, csvCount, csvTotal, numItemsToGen)
 
 #region Count Process
-def beginCount(built,count, numItemsToGen, csvDir):
+def beginCount(built,count,csvCount,csvTotal, numItemsToGen, csvDir):
     #Run primary logic
     start_time = time.perf_counter()
     retriever = Retriever()
@@ -45,7 +50,7 @@ def beginCount(built,count, numItemsToGen, csvDir):
     print(f"Built PowerBI Data for {numItemsToGen} work items in {end_time - start_time} seconds")
 
     start_time = time.perf_counter()
-    csv_writer.create_csv("PowerBI CSV", dataset, csvDir)
+    csv_writer.create_csv("PowerBI CSV", dataset, csvDir, csvCount, csvTotal)
     end_time = time.perf_counter()
     print(f"Populated CSV in {end_time - start_time} seconds")
 #endregion
@@ -60,8 +65,8 @@ def recordCount(connection):
                 break
     print("We seem to have finished counting!")
 
-def createBarWindow(built, counted, total):
-    barWindow = gui("Progress", "600x50")
+def createBarWindow(built, counted, csvCount, csvTotal, total):
+    barWindow = gui("Progress", "600x125")
     
     barWindow.addMeter("Built Items")
     barWindow.setMeterFill("Built Items", "orange")
@@ -70,19 +75,36 @@ def createBarWindow(built, counted, total):
     barWindow.addMeter("Counted Items")
     barWindow.setMeterFill("Counted Items", "blue")
     barWindow.setMeter("Counted Items", 0, "Count Progress...")
-    barWindow.after(1, lambda: updateBar(barWindow,total,built, counted))
+
+    barWindow.addMeter("CSV Progress")
+    barWindow.setMeterFill("CSV Progress", "green")
+    barWindow.setMeter("CSV Progress", 0, "CSV Progress...")
+
+    barWindow.after(1, lambda: updateBar(barWindow, total, built, counted, csvCount, csvTotal))
     barWindow.go()
 
-def updateBar(window,total,built,count):
+def updateBar(window,total,built,count,csvCount,csvTotal):
+    global taskCompleted
     pollingRate = 5 #Polling rate in ms
 
     curBuilt = built.value
-    window.setMeter("Built Items", (curBuilt/total)*100, f"{curBuilt}/{total} items built")
+    if curBuilt > 0:
+        window.setMeter("Built Items", (curBuilt/total)*100, f"{curBuilt}/{total} items built")
 
     curCount = count.value
-    window.setMeter("Counted Items", (curCount/total)*100, f"{curCount}/{total} items processed")
-    if curCount != total:
-         window.after(pollingRate, lambda: updateBar(window,total,built,count))
+    if curCount > 0:
+        window.setMeter("Counted Items", (curCount/total)*100, f"{curCount}/{total} items processed")
+
+    csvRowsWritten = csvCount.value
+    csvRowsRequired = csvTotal.value
+    if csvRowsWritten > 0:
+        window.setMeter("CSV Progress", (csvRowsWritten/csvRowsRequired)*100, f"{csvRowsWritten}/{csvRowsRequired} csv rows written")
+        if curBuilt == total and curCount == total and csvRowsWritten == csvRowsRequired:
+            taskCompleted = True
+
+    if not taskCompleted:
+        window.after(pollingRate, lambda: updateBar(window,total,built,count,csvCount,csvTotal))
+
     
 #endregion
 

@@ -1,14 +1,15 @@
 import csv
 import os
 
-def create_csv(name : str, data : list[dict], dirPth = ""):
+def create_csv(name : str, data : list[dict], dirPth = "", countCallback = None, totalCallback = None):
+    totalRows = len(data)
+
     #Early exit for no data
-    if len(data) < 1:
+    if totalRows < 1:
         return
     
-    #If path does not exist, make it
-    #If file 
-
+    if totalCallback != None:
+        totalCallback.value = totalRows
 
     #Verify filepath exists
     if dirPth != "":
@@ -34,7 +35,8 @@ def create_csv(name : str, data : list[dict], dirPth = ""):
     with open(finalFilePath, "x", newline = '') as new_csv:
         writer = csv.DictWriter(new_csv, field_names)
         writer.writeheader()
-        writer.writerows(data)
-        # for entry in data:
-        #     writer.writerow(entry)
-    pass
+        #writer.writerows(data)
+        for entry in data:
+            writer.writerow(entry)
+            if countCallback != None:
+                countCallback.value += 1
