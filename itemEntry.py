@@ -208,9 +208,7 @@ class ItemEntry:
         self.dataDict["Type"] = self.itemType.name
         self.dataDict["Status"] = None
 
-        for monthNum in self.statuses.keys():
-            if monthNum+1 not in self.statuses:
-                self.curStatus = self.statuses[monthNum][len(self.statuses[monthNum])-1]
+        self.curStatus = self.statuses[list(self.statuses.keys())[-1]][-1]
     
     def __str__(self) -> str:
         output = ("| Item ID: " + str(self.itemID) +
@@ -224,7 +222,7 @@ class ItemEntry:
     def get_data(self, month = -1) -> dict:
         output : dict = self.dataDict.copy()
         output["Month"] = date_handler.format_date(month)
-        output["Status"] = self.statuses[month][len(self.statuses[month])-1].name
+        output["Status"] = self.statuses[month][-1].name
         return output
 
     def produce_content_tag(self, month : int) -> str:

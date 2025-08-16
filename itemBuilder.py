@@ -8,6 +8,12 @@ class ItemBuilder():
     #Generates x random item entries
     def buildXRandomItems(self, x : int, processCallback=None) -> list[ItemEntry]:
         outputItemList = []
+
+        prios = list(Prio)
+        types = list(ItemType)
+        statuses = list(Status)
+        
+
         i = 0
         while i < x:
             #Randomly generate item entry status history
@@ -18,13 +24,13 @@ class ItemBuilder():
                 randStatusDict[i2] = []
                 numStatuses = random.randint(1,3)
                 for i3 in range(0, numStatuses):
-                    randStatusDict[i2].append(random.choice(list(Status))) #33 choices in original problem
+                    randStatusDict[i2].append(random.choice(statuses)) #33 choices in original problem
 
             #Randomly generate item entry status history
             randArgs = {}
             randArgs["Team"] = random.randint(1,44) #44 choices in original problem
-            randArgs["Prio"] = random.choice(list(Prio)) #3 choices in original problem
-            randArgs["Type"] = random.choice(list(ItemType)) #146 choices in original problem
+            randArgs["Prio"] = random.choice(prios) #3 choices in original problem
+            randArgs["Type"] = random.choice(types) #146 choices in original problem
 
             nextItem = ItemEntry(randArgs["Team"], randArgs["Prio"], randArgs["Type"], randStatusDict, i)
 

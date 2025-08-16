@@ -74,7 +74,7 @@ def createBarWindow(built, counted, total):
     barWindow.go()
 
 def updateBar(window,total,built,count):
-    pollingRate = 1 #Polling rate in ms
+    pollingRate = 5 #Polling rate in ms
 
     curBuilt = built.value
     window.setMeter("Built Items", (curBuilt/total)*100, f"{curBuilt}/{total} items built")
