@@ -1,7 +1,7 @@
 from retriever import Retriever
 
 from multiprocessing import Process
-from multiprocessing import Pipe
+from multiprocessing import freeze_support
 from multiprocessing import Value
 
 from appJar import gui
@@ -109,6 +109,7 @@ def updateBar(window,total,built,count,csvCount,csvTotal):
 #endregion
 
 if __name__ == "__main__":
+    freeze_support()
     main_window = gui("Work Item Filter", "600x150")
     main_window.addLabel("Set Up Work Item Filter")
     main_window.setLabelBg("Set Up Work Item Filter", "lightblue")
